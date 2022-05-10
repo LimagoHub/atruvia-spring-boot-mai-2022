@@ -94,19 +94,22 @@ public class PersonenController {
 	public ResponseEntity<Void> createOrUpdate(@Valid @RequestBody final PersonDto person) {
 		
 		
-		
+		// 201 create wenn neu (false)
+		// 200 update (true)
 		System.out.println(person + " wurde gespeichert");
 		return ResponseEntity.ok().build(); // 201 create oder 200 ok
 	}
 	@DeleteMapping(path="", consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Void> delete(@RequestBody final PersonDto person) {
 		
-		
+		// 200 ok
+		// 404 not found
 		return delete(person.getId());
 	}
 	@DeleteMapping(path="/{id}")
 	public ResponseEntity<Void> delete(@PathVariable final String id) {
-		
+		// 200 ok
+		// 404 not found
 		System.out.println("Person mit der ID " + id + " wird geloescht");
 		return ResponseEntity.ok().build(); // 201 create oder 200 ok
 	}
