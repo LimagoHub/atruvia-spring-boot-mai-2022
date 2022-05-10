@@ -4,6 +4,8 @@ package de.atruvia.webapp.controllers;
 import java.util.List;
 import java.util.UUID;
 
+import javax.validation.Valid;
+
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,12 +20,19 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import de.atruvia.webapp.dtos.PersonDto;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
 @RestController
 @RequestMapping("/v1/personen")
+
 public class PersonenController {
 
 	
+	
+	@ApiResponse(responseCode = "200", description = "Person wurde gefunden")
+	@ApiResponse(responseCode = "404", description = "Person wurde nicht gefunden")
+	@ApiResponse(responseCode = "400", description = "Falsches Format")
+	@ApiResponse(responseCode = "500", description = "interner Serverfehler")
 	@GetMapping(path="/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<PersonDto> findPersonById(@PathVariable final String id) { // Nur Id als Parameter
 		final PersonDto result = PersonDto
@@ -82,7 +91,9 @@ public class PersonenController {
 	
 	// Put wenn die Abfrage idempotent ist
 	@PutMapping(path="", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Void> createOrUpdate(@RequestBody final PersonDto person) {
+	public ResponseEntity<Void> createOrUpdate(@Valid @RequestBody final PersonDto person) {
+		
+		
 		
 		System.out.println(person + " wurde gespeichert");
 		return ResponseEntity.ok().build(); // 201 create oder 200 ok
