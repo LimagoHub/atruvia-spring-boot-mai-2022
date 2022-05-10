@@ -1,5 +1,7 @@
 package de.atruvia.webapp.services.impl;
 
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -25,6 +27,9 @@ public class PersonenServiceImpl {
 			if(person == null)
 				throw new PersonenServiceException("Upps");
 			
+			if(person.getVorname().equals("Attila"))
+				throw new PersonenServiceException("Unsympath");
+			
 			final boolean result = repo.existsById(person.getId());
 			
 			repo.save(mapper.convert(person));
@@ -34,5 +39,39 @@ public class PersonenServiceImpl {
 			throw new PersonenServiceException("Fehler im Service", e);
 		}
 	}
+	
+	public Optional<Person> findeNachId(final String id)  throws PersonenServiceException {
+		try {
+			return repo.findById(id).map(mapper::convert);
+		} catch (final RuntimeException e) {
+			throw new PersonenServiceException("Fehler im Service", e);
+		}
+	}
+
+	public Iterable<Person> findeAlle()  throws PersonenServiceException {
+		try {
+			return mapper.convert(repo.findAll());
+		} catch (final RuntimeException e) {
+			throw new PersonenServiceException("Fehler im Service", e);
+		}
+	}
+	
+	public boolean delete(final Person person)  throws PersonenServiceException {
+		return delete(person.getId());
+	}
+
+	public boolean delete(final String id)  throws PersonenServiceException {
+		try {
+			final boolean result = repo.existsById(id);
+			
+			repo.deleteById(id);
+			
+			return result;
+			
+		} catch (final RuntimeException e) {
+			throw new PersonenServiceException("Fehler im Service", e);
+		}
+	}
+
 
 }
