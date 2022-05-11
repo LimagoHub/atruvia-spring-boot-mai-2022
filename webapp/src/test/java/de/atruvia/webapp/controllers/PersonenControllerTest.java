@@ -54,14 +54,24 @@ public class PersonenControllerTest {
 	}
 	@Test
 	void test3() throws Exception{
+		final Optional<Person> optionalPerson = Optional.of(Person.builder().id("1").vorname("John").nachname("Doe").build());
+		when(serviceMock.findeNachId(anyString())).thenReturn(optionalPerson);
+		
+		
+		
 		final ResponseEntity<PersonDto> personEntity = restTemplate.getForEntity("/v1/personen/b2e24e74-8686-43ea-baff-d9396b4202e0", PersonDto.class);
 		final PersonDto person =  personEntity.getBody();
 		
-		assertEquals("Robinett",person.getVorname());
+		assertEquals("John",person.getVorname());
 		assertEquals(HttpStatus.OK, personEntity.getStatusCode());
 	}
 	@Test
 	void test4() throws Exception{
+		
+		final Optional<Person> optionalPerson = Optional.empty();
+		when(serviceMock.findeNachId(anyString())).thenReturn(optionalPerson);
+		
+		
 		final ResponseEntity<PersonDto> personEntity = restTemplate.getForEntity("/v1/personen/noSuchPerson", PersonDto.class);
 		
 		
