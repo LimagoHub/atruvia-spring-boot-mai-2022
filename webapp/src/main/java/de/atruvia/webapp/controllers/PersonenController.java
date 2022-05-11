@@ -1,11 +1,11 @@
 package de.atruvia.webapp.controllers;
 
 
-import java.util.List;
 import java.util.UUID;
 
 import javax.validation.Valid;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,66 +19,40 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import de.atruvia.webapp.controllers.mapper.PersonDtoMapper;
 import de.atruvia.webapp.dtos.PersonDto;
+import de.atruvia.webapp.services.PersonenService;
+import de.atruvia.webapp.services.PersonenServiceException;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import lombok.AllArgsConstructor;
 
 @RestController
 @RequestMapping("/v1/personen")
-
+@AllArgsConstructor
 public class PersonenController {
 
-	
+	private final PersonenService personenService;
+	private final PersonDtoMapper mapper;
 	
 	@ApiResponse(responseCode = "200", description = "Person wurde gefunden")
 	@ApiResponse(responseCode = "404", description = "Person wurde nicht gefunden")
 	@ApiResponse(responseCode = "400", description = "Falsches Format")
 	@ApiResponse(responseCode = "500", description = "interner Serverfehler")
 	@GetMapping(path="/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<PersonDto> findPersonById(@PathVariable final String id) { // Nur Id als Parameter
-		final PersonDto result = PersonDto
-				.builder()
-				.id(id)
-				.vorname("John")
-				.nachname("Doe")
-				.build()	; 
-		return ResponseEntity.ok(result);
+	public ResponseEntity<PersonDto> findPersonById(@PathVariable final String id) throws PersonenServiceException{ // Nur Id als Parameter
+		
+		return ResponseEntity.of(personenService.findeNachId(id).map(mapper::convert));
 	}
 	
 	@GetMapping(path = "", produces = MediaType.APPLICATION_JSON_VALUE) // Bei HTML -Maske oder andere Spalte als ID
 	public ResponseEntity<Iterable< PersonDto>> findAll(
 			@RequestParam(required = false, defaultValue = "") final String vorname,
 			@RequestParam(required = false, defaultValue = "") final String name
-			) {
+			)  throws PersonenServiceException{
 		
-		final Iterable<PersonDto> result = List.of(
-				PersonDto
-				.builder()
-				.id("1")
-				.vorname("John")
-				.nachname("Doe")
-				.build(),
-				PersonDto
-				.builder()
-				.id("2")
-				.vorname("John")
-				.nachname("Rambo")
-				.build(),
-				PersonDto
-				.builder()
-				.id("3")
-				.vorname("John")
-				.nachname("Wayne")
-				.build()	,
-				PersonDto
-				.builder()
-				.id("1")
-				.vorname("John")
-				.nachname("McClain")
-				.build()	
-				);
 		
 		 
-		return ResponseEntity.ok(result);
+		return ResponseEntity.ok(mapper.convert(personenService.findeAlle()));
 	}
 	
 	// Ersatz-Get wegen parameterobjekt (safe und idempotent)
@@ -91,27 +65,22 @@ public class PersonenController {
 	
 	// Put wenn die Abfrage idempotent ist
 	@PutMapping(path="", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Void> createOrUpdate(@Valid @RequestBody final PersonDto person) {
+	public ResponseEntity<Void> createOrUpdate(@Valid @RequestBody final PersonDto person)  throws PersonenServiceException{
 		
 		
-		// 201 create wenn neu (false)
-		// 200 update (true)
-		System.out.println(person + " wurde gespeichert");
-		return ResponseEntity.ok().build(); // 201 create oder 200 ok
+		if(personenService.speichern(mapper.convert(person)))
+			return ResponseEntity.ok().build(); 
+		return ResponseEntity.status(HttpStatus.CREATED).build(); 
 	}
 	@DeleteMapping(path="", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Void> delete(@RequestBody final PersonDto person) {
-		
-		// 200 ok
-		// 404 not found
+	public ResponseEntity<Void> delete(@RequestBody final PersonDto person)  throws PersonenServiceException{
 		return delete(person.getId());
 	}
 	@DeleteMapping(path="/{id}")
-	public ResponseEntity<Void> delete(@PathVariable final String id) {
-		// 200 ok
-		// 404 not found
-		System.out.println("Person mit der ID " + id + " wird geloescht");
-		return ResponseEntity.ok().build(); // 201 create oder 200 ok
+	public ResponseEntity<Void> delete(@PathVariable final String id)  throws PersonenServiceException{
+		if(personenService.delete(id))
+			return ResponseEntity.ok().build(); 
+		return ResponseEntity.notFound().build(); 
 	}
 	
 	// Post wenn die Abfrage nicht idempotent ist

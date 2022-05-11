@@ -8,6 +8,8 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import de.atruvia.webapp.repositories.PersonenRepository;
+import de.atruvia.webapp.services.PersonenService;
+import de.atruvia.webapp.services.PersonenServiceException;
 import de.atruvia.webapp.services.mapper.PersonMapper;
 import de.atruvia.webapp.services.models.Person;
 import lombok.AllArgsConstructor;
@@ -16,11 +18,12 @@ import lombok.AllArgsConstructor;
 @Service
 @Transactional(propagation = Propagation.REQUIRED, 
 rollbackFor = PersonenServiceException.class, isolation = Isolation.READ_COMMITTED)
-public class PersonenServiceImpl {
+public class PersonenServiceImpl implements PersonenService {
 	
 	private final PersonenRepository repo;
 	private final PersonMapper mapper;
 	
+	@Override
 	public boolean speichern(final Person person) throws PersonenServiceException{
 		
 		try {
@@ -40,6 +43,7 @@ public class PersonenServiceImpl {
 		}
 	}
 	
+	@Override
 	public Optional<Person> findeNachId(final String id)  throws PersonenServiceException {
 		try {
 			return repo.findById(id).map(mapper::convert);
@@ -48,6 +52,7 @@ public class PersonenServiceImpl {
 		}
 	}
 
+	@Override
 	public Iterable<Person> findeAlle()  throws PersonenServiceException {
 		try {
 			return mapper.convert(repo.findAll());
@@ -56,17 +61,22 @@ public class PersonenServiceImpl {
 		}
 	}
 	
+	@Override
 	public boolean delete(final Person person)  throws PersonenServiceException {
 		return delete(person.getId());
 	}
 
+	@Override
 	public boolean delete(final String id)  throws PersonenServiceException {
 		try {
-			final boolean result = repo.existsById(id);
+			if(repo.existsById(id)) {
+				repo.deleteById(id);
+				return true;
+			}
 			
-			repo.deleteById(id);
 			
-			return result;
+			
+			return false;
 			
 		} catch (final RuntimeException e) {
 			throw new PersonenServiceException("Fehler im Service", e);

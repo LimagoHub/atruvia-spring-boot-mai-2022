@@ -1,4 +1,4 @@
-package de.atruvia.webapp.services.impl;
+package de.atruvia.webapp.services;
 
 public class PersonenServiceException extends Exception {
 
