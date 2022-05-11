@@ -1,7 +1,10 @@
 package de.atruvia.webapp.controllers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
@@ -12,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
@@ -77,5 +82,45 @@ public class PersonenControllerTest {
 		
 		
 		assertEquals(HttpStatus.NOT_FOUND, personEntity.getStatusCode());
+	}
+	
+	@Test
+	void test5() throws Exception{
+		
+		final HttpEntity entity = new HttpEntity( PersonDto.builder()
+				.id("012345678901234567890123456789012345")
+				.vorname("John")
+				.nachname("Doe")
+				.build());
+		
+		when(serviceMock.speichern(any())).thenReturn(false);
+		
+		
+		final ResponseEntity<Void> personEntity = restTemplate.exchange("/v1/personen",HttpMethod.PUT, entity, Void.class);
+		
+		
+		assertEquals(HttpStatus.CREATED ,personEntity.getStatusCode());
+	    verify(serviceMock, times(1)).speichern(Person.builder().id("012345678901234567890123456789012345").vorname("John").nachname("Doe").build());
+
+	}
+	
+	@Test
+	void test6() throws Exception{
+		
+		final HttpEntity entity = new HttpEntity( PersonDto.builder()
+				.id("012345678901234567890123456789012345")
+				.vorname("John")
+				.nachname("Doe")
+				.build());
+		
+		when(serviceMock.speichern(any())).thenReturn(true);
+		
+		
+		final ResponseEntity<Void> personEntity = restTemplate.exchange("/v1/personen",HttpMethod.PUT, entity, Void.class);
+		
+		
+		assertEquals(HttpStatus.OK ,personEntity.getStatusCode());
+	    verify(serviceMock, times(1)).speichern(Person.builder().id("012345678901234567890123456789012345").vorname("John").nachname("Doe").build());
+
 	}
 }
