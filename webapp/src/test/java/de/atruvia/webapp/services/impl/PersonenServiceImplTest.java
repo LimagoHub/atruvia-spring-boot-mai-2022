@@ -10,7 +10,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import de.atruvia.webapp.repositories.PersonenRepository;
-import de.atruvia.webapp.services.PersonenService;
 import de.atruvia.webapp.services.PersonenServiceException;
 import de.atruvia.webapp.services.mapper.PersonMapper;
 
@@ -18,7 +17,7 @@ import de.atruvia.webapp.services.mapper.PersonMapper;
 public class PersonenServiceImplTest {
 
 	@InjectMocks
-	private PersonenService objectUnderTest;
+	private PersonenServiceImpl objectUnderTest;
 	
 	@Mock
 	private PersonenRepository repoMock;

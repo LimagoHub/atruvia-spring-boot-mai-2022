@@ -2,6 +2,7 @@ package de.atruvia.webapp.demo;
 
 import javax.inject.Named;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 
@@ -16,6 +17,8 @@ public class Demo {
 	
 	private final PersonenRepository repo;
 	
+	@Value("${Demo.message}")
+	private final String message ="Default";
 	
 //	@PostConstruct
 //	public void run() {
